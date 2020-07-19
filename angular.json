@@ -123,6 +123,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "ng-stacked-carousel"
+    }
+  },
+  "defaultProject": "ng-stacked-carousel",
+  "cli": {
+    "analytics": false
+  }
 }

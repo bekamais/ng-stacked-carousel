@@ -1,34 +1,31 @@
-import {
-  Component,
-  OnInit,
-  Input,
-  ViewChild,
-  ElementRef,
-  AfterViewInit,
-} from '@angular/core';
-import { gsap } from 'gsap';
+import { Component, OnInit, Input, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CarouselModel } from './models/CarouselModel';
+
+import { gsap } from 'gsap';
 
 @Component({
   selector: 'app-carousel',
   templateUrl: './carousel.component.html',
-  styleUrls: ['./carousel.component.scss'],
+  styleUrls: ['./carousel.component.scss']
 })
 export class CarouselComponent implements OnInit, AfterViewInit {
+  @ViewChild('carouselContainer', { static: true }) carouselContainer: ElementRef<HTMLDivElement>;
   @ViewChild('carousel', { static: true }) carousel: ElementRef<HTMLDivElement>;
-  @ViewChild('carouselContainer', { static: true })
-  carouselContainer: ElementRef<HTMLDivElement>;
 
   @Input() data: CarouselModel[];
 
   baseZIndex = 50;
   scaleRatio = 10;
   middleIndex: number;
-  isAnimaiting = false;
-  prevSlideFinished = false;
-  constructor() {}
 
-  ngOnInit(): void {}
+  isAnimating = false;
+  prevSlideFinished = false;
+
+
+  constructor() { }
+
+  ngOnInit(): void {
+  }
 
   initCarousel(): void {
     if (this.carousel && this.carousel.nativeElement) {
@@ -36,7 +33,7 @@ export class CarouselComponent implements OnInit, AfterViewInit {
         duration: 0,
         top: '40%',
         left: '50%',
-        transform: 'translate(-50%, -50%)',
+        transform: 'translate(-50%, -50%)'
       });
       this.middleIndex = Math.ceil(this.carousel.nativeElement.childNodes.length / 2);
       const midElement = this.carousel.nativeElement.children[this.middleIndex - 1];
@@ -54,21 +51,20 @@ export class CarouselComponent implements OnInit, AfterViewInit {
     let countingForwards = 0;
     let tempZIndex = 0;
     for (let i = midIndex - 1; i >= 0; i--) {
-      countingForwards++;
       tempZIndex -= 1;
-      const leftNodes = this.carousel.nativeElement.children[
-        i - 1
-      ] as HTMLDivElement;
+      countingForwards++;
+      const leftNodes = this.carousel.nativeElement.children[i - 1];
       if (leftNodes) {
         gsap.to(leftNodes, {
           duration: 0,
           zIndex: tempZIndex,
           x: -(80 * countingForwards),
-          scale: `0.${this.scaleRatio - countingForwards}`,
+          scale: `0.${this.scaleRatio - countingForwards}`
         });
       }
     }
   }
+
   positionRightNodes(midIndex: number): void {
     const carouselLength = this.carousel.nativeElement.children.length;
     let countingForwards = 0;
@@ -76,30 +72,24 @@ export class CarouselComponent implements OnInit, AfterViewInit {
     for (let i = midIndex; i < carouselLength; i++) {
       countingForwards++;
       tempZIndex -= 1;
-      const rightNodes = this.carousel.nativeElement.children[
-        i
-      ] as HTMLDivElement;
+      const rightNodes = this.carousel.nativeElement.children[i] as HTMLDivElement;
       if (rightNodes) {
         gsap.to(rightNodes, {
           duration: 0,
           zIndex: tempZIndex,
           x: 80 * countingForwards,
-          scale: `0.${this.scaleRatio - countingForwards}`,
+          scale: `0.${this.scaleRatio - countingForwards}`
         });
       }
     }
-  }
-
-  get noMoreElements(): boolean {
-    return (this.carousel.nativeElement.children[this.middleIndex + 1] === undefined);
   }
 
   ngAfterViewInit() {
     this.initCarousel();
   }
 
-  next() {
-    this.isAnimaiting = true;
+  next(): void {
+    this.isAnimating = true;
     this.prevSlideFinished = false;
     // dynamically changing element positions
     if (this.middleIndex > 1) {
@@ -107,34 +97,16 @@ export class CarouselComponent implements OnInit, AfterViewInit {
       this.moveRemainingRightSide();
     }
   }
-  moveRemainingRightSide(): void {
-    const length = this.carousel.nativeElement.children.length;
-    for (let i = this.middleIndex; i < length; i++) {
-      // getting current style values
-      const element = this.carousel.nativeElement.children[i] as any;
-      const currentTranslateXValue = gsap.getProperty(element, 'translateX');
-      const currZIndex = gsap.getProperty(element, 'zIndex');
-      const currentScale = gsap.getProperty(element, 'scale');
 
-      gsap.to(element, {
-        duration: 0.3,
-        zIndex: typeof currZIndex === 'number' && currZIndex - 1,
-        x:
-          typeof currentTranslateXValue === 'number' &&
-          currentTranslateXValue + 80,
-        scale:
-          typeof currentScale === 'number' &&
-          parseFloat((currentScale - 0.1).toFixed(1)),
-        onComplete: () => (this.isAnimaiting = false),
-      });
-    }
+  get noMoreElements(): boolean {
+    return (this.carousel.nativeElement.children[this.middleIndex + 1] === undefined);
   }
 
   moveLeftSideAlongWithMainElement(): void {
     for (let i = 0; i <= this.middleIndex; i++) {
-      // getting current style values
       const element = this.carousel.nativeElement.children[i] as HTMLDivElement;
       const prevElement = this.carousel.nativeElement.children[i - 1] as HTMLDivElement;
+      // getting current style values
       const currentTranslateXValue = gsap.getProperty(element, 'translateX');
       const currZIndex = gsap.getProperty(element, 'zIndex');
       const currentScale = gsap.getProperty(element, 'scale');
@@ -145,56 +117,53 @@ export class CarouselComponent implements OnInit, AfterViewInit {
           duration: 0.3,
           zIndex: typeof currZIndex === 'number' && currZIndex - 1,
           x: 80,
-          scale: '0.9',
+          scale: '0.9'
         });
-        // update previous z-index to be main
+        // update previous element z-index to be main
         gsap.to(prevElement, {
           duration: 0.3,
-          zIndex: this.baseZIndex,
+          zIndex: this.baseZIndex
         });
-
         // update middle index
         this.middleIndex = i;
       } else {
-        // move all the remaining elemets to left
+        // move all the remaining elements to right
         gsap.to(element, {
           duration: 0.3,
           zIndex: typeof currZIndex === 'number' && currZIndex + 1,
-          x:
-            typeof currentTranslateXValue === 'number' &&
-            currentTranslateXValue + 80,
-          scale:
-            typeof currentScale === 'number' &&
-            parseFloat((currentScale + 0.1).toFixed(1)),
+          x: typeof currentTranslateXValue === 'number' && currentTranslateXValue + 80,
+          scale: typeof currentScale === 'number' && parseFloat((currentScale + 0.1).toFixed(1)),
         });
       }
     }
   }
 
-  // prev methods
-  moveRemainingRightSidePrev(): void {
-    let tempZIndex = this.baseZIndex;
+  moveRemainingRightSide(): void {
     const length = this.carousel.nativeElement.children.length;
-    for (let i = this.middleIndex + 1; i < length; i++) {
-      const element = this.carousel.nativeElement.children[i] as any;
+    for (let i = this.middleIndex; i < length; i++) {
+      // style values
+      const element = this.carousel.nativeElement.children[i] as HTMLDivElement;
       const currentTranslateXValue = gsap.getProperty(element, 'translateX');
+      const currZIndex = gsap.getProperty(element, 'zIndex');
       const currentScale = gsap.getProperty(element, 'scale');
-      tempZIndex--;
 
       gsap.to(element, {
         duration: 0.3,
-        zIndex: tempZIndex,
-        x:
-          typeof currentTranslateXValue === 'number' &&
-          currentTranslateXValue - 80,
-        scale:
-          typeof currentScale === 'number' &&
-          parseFloat((currentScale + 0.1).toFixed(1)),
+        zIndex: typeof currZIndex === 'number' && currZIndex - 1,
+        x: typeof currentTranslateXValue === 'number' && currentTranslateXValue + 80,
+        scale: typeof currentScale === 'number' && parseFloat((currentScale - 0.1).toFixed(1)),
+        onComplete: () => (this.isAnimating = false)
       });
     }
   }
 
-  moveLeftSideAlongWithMainElementPrev(): void {
+
+
+
+  // --- prev methods
+
+
+  moveLeftSideAlongthWithMainElementPrev(): void {
     for (let i = this.middleIndex; i >= 0; i--) {
       // temp variables
       const element = this.carousel.nativeElement.children[i] as HTMLDivElement;
@@ -209,51 +178,60 @@ export class CarouselComponent implements OnInit, AfterViewInit {
         gsap.to(element, {
           duration: 0.3,
           zIndex: -1,
-          x:
-            typeof currentTranslateXValue === 'number' &&
-            currentTranslateXValue - 80,
-          scale:
-            typeof currentScale === 'number' &&
-            parseFloat((currentScale - 0.1).toFixed(1)),
+          x: typeof currentTranslateXValue === 'number' && currentTranslateXValue - 80,
+          scale: typeof currentScale === 'number' && parseFloat((currentScale - 0.1).toFixed(1))
         });
-        // update next z-index to be main
+        // update next element z-index to be main
         gsap.to(nextElement, {
           duration: 0.3,
           zIndex: this.baseZIndex,
-          x:
-            typeof currentTranslateXValue === 'number' &&
-            currentTranslateXValue,
-          scale:
-            typeof currentScale === 'number' &&
-            parseFloat(currentScale.toFixed(1)),
+          x: typeof currentTranslateXValue === 'number' && currentTranslateXValue,
+          scale: typeof currentScale === 'number' && parseFloat((currentScale.toFixed(1)))
         });
         this.middleIndex = i + 1;
       } else {
         gsap.to(element, {
           duration: 0.3,
           zIndex: typeof currZIndex === 'number' && currZIndex - 1,
-          x:
-            typeof currentTranslateXValue === 'number' &&
-            currentTranslateXValue - 80,
-          scale:
-            typeof currentScale === 'number' &&
-            parseFloat((currentScale - 0.1).toFixed(1)),
+          x: typeof currentTranslateXValue === 'number' && currentTranslateXValue - 80,
+          scale: typeof currentScale === 'number' && parseFloat((currentScale - 0.1).toFixed(1)),
           onComplete: () => {
-            this.isAnimaiting = false;
+            this.isAnimating = false;
             if (this.noMoreElements) {
               this.prevSlideFinished = true;
             } else {
               this.prevSlideFinished = false;
             }
-          },
+          }
         });
       }
     }
   }
 
-  prev() {
-    this.isAnimaiting = true;
-    this.moveLeftSideAlongWithMainElementPrev();
+
+  moveRemainingRightSidePrev(): void {
+    let tempZIndex = this.baseZIndex;
+    const length = this.carousel.nativeElement.children.length;
+    for (let i = this.middleIndex + 1; i < length; i++) {
+      const element = this.carousel.nativeElement.children[i] as HTMLDivElement;
+      const currentTranslateXValue = gsap.getProperty(element, 'translateX');
+      const currentScale = gsap.getProperty(element, 'scale');
+      tempZIndex--;
+
+      gsap.to(element, {
+        duration: 0.3,
+        zIndex: tempZIndex,
+        x: typeof currentTranslateXValue === 'number' && currentTranslateXValue - 80,
+        scale: typeof currentScale === 'number' && parseFloat((currentScale + 0.1).toFixed(1))
+      });
+    }
+  }
+
+  prev(): void {
+    this.isAnimating = true;
+    this.moveLeftSideAlongthWithMainElementPrev();
     this.moveRemainingRightSidePrev();
   }
+
+
 }
